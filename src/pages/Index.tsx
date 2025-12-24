@@ -7,11 +7,11 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { UnitEconomics } from '@/components/dashboard/UnitEconomics';
 import { LeadSources } from '@/components/dashboard/LeadSources';
 import { ChurnAnalysis } from '@/components/dashboard/ChurnAnalysis';
+import { ClassLoad } from '@/components/dashboard/ClassLoad';
 import { 
   Users, 
   TrendingUp, 
   Repeat,
-  Target,
   CreditCard,
   Wallet
 } from 'lucide-react';
@@ -130,6 +130,19 @@ const churnData = [
   { cohort: 'Декабрь', churn: 11, retention: 89 },
 ];
 
+const classLoadData = [
+  { name: 'Scratch', sold: 45, capacity: 50 },
+  { name: 'Python', sold: 38, capacity: 45 },
+  { name: 'Roblox', sold: 42, capacity: 45 },
+  { name: 'Дизайн миров', sold: 28, capacity: 40 },
+  { name: 'Unity', sold: 22, capacity: 35 },
+  { name: 'Python Pro', sold: 18, capacity: 25 },
+  { name: 'Веб-дизайн', sold: 31, capacity: 40 },
+  { name: 'Дизайн миров Pro', sold: 12, capacity: 20 },
+  { name: 'JavaScript', sold: 25, capacity: 35 },
+  { name: 'Unity 3D Pro', sold: 14, capacity: 20 },
+];
+
 export default function Index() {
   return (
     <div className="min-h-screen bg-background">
@@ -152,20 +165,6 @@ export default function Index() {
             recommendation={{
               type: 'warning',
               message: 'Снижение к прошлому месяцу. Проверьте качество лидов.'
-            }}
-          />
-          <MetricCard
-            title="Конверсия в оплату"
-            value="19.8%"
-            change={-2}
-            yearChange={4}
-            changeLabel="vs прошлый месяц / год"
-            icon={Target}
-            variant="info"
-            delay={150}
-            recommendation={{
-              type: 'info',
-              message: 'Ниже таргета 22%. Фокус на этап "Запись на урок".'
             }}
           />
           <MetricCard
@@ -237,8 +236,13 @@ export default function Index() {
         </div>
         
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <UnitEconomics metrics={unitMetrics} />
+          <ClassLoad classes={classLoadData} />
+        </div>
+
+        {/* Third Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <LeadSources sources={leadSources} />
           <ChurnAnalysis data={churnData} />
         </div>
