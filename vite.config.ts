@@ -5,6 +5,10 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // GitHub Pages для репо-сайта: https://USERNAME.github.io/REPO_NAME/
+  // Поэтому base должен быть "/REPO_NAME/"
+  base: "/sales-leader-insights/",
+
   server: {
     host: "::",
     port: 8080,
