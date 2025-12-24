@@ -72,7 +72,7 @@ export function ManagersTable({ managers }: ManagersTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/30">
-            {managers.map((manager) => (
+            {managers.filter(m => m.funnel).map((manager) => (
               <tr 
                 key={manager.id}
                 className="group hover:bg-muted/30 transition-colors"
