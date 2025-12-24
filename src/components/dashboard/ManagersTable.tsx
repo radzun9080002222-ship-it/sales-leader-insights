@@ -1,19 +1,40 @@
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+interface ManagerFunnel {
+  newLeads: number;
+  responded: number;
+  dialogEstablished: number;
+  offerMade: number;
+  paid: number;
+}
+
+interface ManagerAlert {
+  type: 'lrt' | 'conversion' | 'missed';
+  message: string;
+}
 
 interface Manager {
   id: string;
   name: string;
   avatar: string;
-  leads: number;
-  conversions: number;
-  revenue: number;
-  avgCheck: number;
-  trend: 'up' | 'down' | 'stable';
+  funnel: ManagerFunnel;
+  alert?: ManagerAlert;
 }
 
 interface ManagersTableProps {
   managers: Manager[];
+}
+
+function calcPercent(current: number, previous: number): string {
+  if (previous === 0) return '0%';
+  return `${((current / previous) * 100).toFixed(0)}%`;
 }
 
 export function ManagersTable({ managers }: ManagersTableProps) {
@@ -34,24 +55,24 @@ export function ManagersTable({ managers }: ManagersTableProps) {
                 Менеджер
               </th>
               <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">
-                Лиды
+                Новые лиды
               </th>
               <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">
-                Конверсия
+                Ответ
               </th>
               <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">
-                Выручка
+                Диалог
               </th>
               <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">
-                Ср. чек
+                Предложение
               </th>
               <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">
-                Тренд
+                Оплата
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/30">
-            {managers.map((manager, index) => (
+            {managers.map((manager) => (
               <tr 
                 key={manager.id}
                 className="group hover:bg-muted/30 transition-colors"
@@ -61,47 +82,78 @@ export function ManagersTable({ managers }: ManagersTableProps) {
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/30 to-info/30 flex items-center justify-center text-sm font-semibold text-foreground">
                       {manager.avatar}
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground text-sm">{manager.name}</p>
-                      <p className="text-xs text-muted-foreground">ID: {manager.id}</p>
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{manager.name}</p>
+                        <p className="text-xs text-muted-foreground">ID: {manager.id}</p>
+                      </div>
+                      {manager.alert && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-warning/20 cursor-help">
+                                <AlertTriangle className="w-3 h-3 text-warning" />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p className="font-medium text-warning">{manager.alert.message}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </div>
                   </div>
                 </td>
                 <td className="py-4 text-center">
-                  <span className="font-semibold text-foreground">{manager.leads}</span>
+                  <span className="font-semibold text-foreground">{manager.funnel.newLeads}</span>
                 </td>
                 <td className="py-4 text-center">
-                  <span className={cn(
-                    'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                    manager.conversions >= 25 
-                      ? 'bg-success/20 text-success'
-                      : manager.conversions >= 18
-                      ? 'bg-warning/20 text-warning'
-                      : 'bg-destructive/20 text-destructive'
-                  )}>
-                    {manager.conversions}%
-                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className="font-semibold text-foreground">{manager.funnel.responded}</span>
+                    <span className={cn(
+                      'text-xs px-1.5 py-0.5 rounded',
+                      parseInt(calcPercent(manager.funnel.responded, manager.funnel.newLeads)) >= 90
+                        ? 'text-success'
+                        : parseInt(calcPercent(manager.funnel.responded, manager.funnel.newLeads)) >= 80
+                        ? 'text-warning'
+                        : 'text-destructive'
+                    )}>
+                      ({calcPercent(manager.funnel.responded, manager.funnel.newLeads)})
+                    </span>
+                  </div>
                 </td>
                 <td className="py-4 text-center">
-                  <span className="font-semibold text-foreground">
-                    {manager.revenue.toLocaleString('ru-RU')} ₽
-                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className="font-semibold text-foreground">{manager.funnel.dialogEstablished}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({calcPercent(manager.funnel.dialogEstablished, manager.funnel.responded)})
+                    </span>
+                  </div>
                 </td>
                 <td className="py-4 text-center">
-                  <span className="text-muted-foreground">
-                    {manager.avgCheck.toLocaleString('ru-RU')} ₽
-                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className="font-semibold text-foreground">{manager.funnel.offerMade}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({calcPercent(manager.funnel.offerMade, manager.funnel.dialogEstablished)})
+                    </span>
+                  </div>
                 </td>
                 <td className="py-4 text-center">
-                  {manager.trend === 'up' && (
-                    <TrendingUp className="w-5 h-5 text-success mx-auto" />
-                  )}
-                  {manager.trend === 'down' && (
-                    <TrendingDown className="w-5 h-5 text-destructive mx-auto" />
-                  )}
-                  {manager.trend === 'stable' && (
-                    <Minus className="w-5 h-5 text-muted-foreground mx-auto" />
-                  )}
+                  <div className="flex flex-col items-center">
+                    <span className={cn(
+                      'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                      parseInt(calcPercent(manager.funnel.paid, manager.funnel.offerMade)) >= 50
+                        ? 'bg-success/20 text-success'
+                        : parseInt(calcPercent(manager.funnel.paid, manager.funnel.offerMade)) >= 35
+                        ? 'bg-warning/20 text-warning'
+                        : 'bg-destructive/20 text-destructive'
+                    )}>
+                      {manager.funnel.paid}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      ({calcPercent(manager.funnel.paid, manager.funnel.offerMade)})
+                    </span>
+                  </div>
                 </td>
               </tr>
             ))}

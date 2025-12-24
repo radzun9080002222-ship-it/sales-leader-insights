@@ -6,8 +6,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
 } from 'recharts';
+import { AlertTriangle, CheckCircle, TrendingDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface RevenueData {
   month: string;
@@ -20,6 +21,40 @@ interface RevenueChartProps {
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
+  const latestMonth = data[data.length - 1];
+  const planCompletion = (latestMonth.revenue / latestMonth.plan) * 100;
+  
+  const getRecommendation = () => {
+    if (planCompletion >= 100) {
+      return {
+        type: 'success' as const,
+        icon: CheckCircle,
+        message: 'План выполнен! Рассмотрите повышение плана на следующий месяц.',
+      };
+    } else if (planCompletion >= 85) {
+      return {
+        type: 'info' as const,
+        icon: TrendingDown,
+        message: `Выполнено ${planCompletion.toFixed(0)}% плана. Необходимо ${((latestMonth.plan - latestMonth.revenue) / 1000000).toFixed(1)} млн ₽ для выполнения.`,
+      };
+    } else {
+      return {
+        type: 'warning' as const,
+        icon: AlertTriangle,
+        message: `Отставание от плана ${(100 - planCompletion).toFixed(0)}%. Рекомендуется усилить работу с базой и активные продажи.`,
+      };
+    }
+  };
+
+  const recommendation = getRecommendation();
+  const RecommendationIcon = recommendation.icon;
+
+  const recommendationStyles = {
+    warning: 'bg-warning/20 border-warning/50 text-warning',
+    success: 'bg-success/20 border-success/50 text-success',
+    info: 'bg-info/20 border-info/50 text-info',
+  };
+
   return (
     <div className="chart-container animate-fade-in-up" style={{ animationDelay: '300ms' }}>
       <div className="flex items-center justify-between mb-6">
@@ -36,7 +71,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
         </div>
       </div>
       
-      <div className="h-[300px]">
+      <div className="h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
@@ -89,6 +124,14 @@ export function RevenueChart({ data }: RevenueChartProps) {
             />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className={cn(
+        'mt-4 flex items-start gap-2 px-3 py-2.5 rounded-lg border',
+        recommendationStyles[recommendation.type]
+      )}>
+        <RecommendationIcon className="w-4 h-4 flex-shrink-0 mt-0.5" />
+        <span className="text-xs font-medium leading-relaxed">{recommendation.message}</span>
       </div>
     </div>
   );
