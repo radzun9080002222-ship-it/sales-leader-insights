@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { AlertTriangle, CheckCircle, Lightbulb } from 'lucide-react';
 
 interface FunnelStep {
   label: string;
@@ -12,6 +13,47 @@ interface SalesFunnelProps {
 
 export function SalesFunnel({ steps }: SalesFunnelProps) {
   const maxValue = Math.max(...steps.map(s => s.value));
+  const overallConversion = ((steps[steps.length - 1].value / steps[0].value) * 100);
+  
+  // Determine recommendation based on funnel analysis
+  const getRecommendation = () => {
+    const worstStep = steps.reduce((worst, step, index) => {
+      if (index === 0 || !step.conversion) return worst;
+      if (!worst || (step.conversion && step.conversion < worst.conversion!)) {
+        return step;
+      }
+      return worst;
+    }, null as FunnelStep | null);
+
+    if (overallConversion >= 20) {
+      return {
+        type: 'success' as const,
+        icon: CheckCircle,
+        message: 'Воронка работает эффективно. Конверсия выше целевых 20%.',
+      };
+    } else if (worstStep && worstStep.conversion && worstStep.conversion < 50) {
+      return {
+        type: 'warning' as const,
+        icon: AlertTriangle,
+        message: `Узкое место: "${worstStep.label}" — конверсия ${worstStep.conversion}%. Рекомендуется аудит этапа.`,
+      };
+    } else {
+      return {
+        type: 'info' as const,
+        icon: Lightbulb,
+        message: 'Рассмотрите A/B тесты на этапе записи на пробный урок для повышения конверсии.',
+      };
+    }
+  };
+
+  const recommendation = getRecommendation();
+  const RecommendationIcon = recommendation.icon;
+
+  const recommendationStyles = {
+    warning: 'bg-warning/20 border-warning/50 text-warning',
+    success: 'bg-success/20 border-success/50 text-success',
+    info: 'bg-info/20 border-info/50 text-info',
+  };
 
   return (
     <div className="chart-container animate-fade-in-up" style={{ animationDelay: '200ms' }}>
@@ -74,11 +116,19 @@ export function SalesFunnel({ steps }: SalesFunnelProps) {
       </div>
       
       <div className="mt-6 pt-4 border-t border-border/50">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-muted-foreground">Общая конверсия</span>
           <span className="text-xl font-bold gradient-text">
-            {((steps[steps.length - 1].value / steps[0].value) * 100).toFixed(1)}%
+            {overallConversion.toFixed(1)}%
           </span>
+        </div>
+
+        <div className={cn(
+          'flex items-start gap-2 px-3 py-2.5 rounded-lg border',
+          recommendationStyles[recommendation.type]
+        )}>
+          <RecommendationIcon className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span className="text-xs font-medium leading-relaxed">{recommendation.message}</span>
         </div>
       </div>
     </div>

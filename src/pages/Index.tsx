@@ -9,13 +9,11 @@ import { LeadSources } from '@/components/dashboard/LeadSources';
 import { ChurnAnalysis } from '@/components/dashboard/ChurnAnalysis';
 import { 
   Users, 
-  DollarSign, 
   TrendingUp, 
   Repeat,
   Target,
   CreditCard,
-  UserCheck,
-  BarChart3
+  Wallet
 } from 'lucide-react';
 
 // Mock data
@@ -27,11 +25,39 @@ const funnelSteps = [
 ];
 
 const managers = [
-  { id: 'M001', name: 'Анна Смирнова', avatar: 'АС', leads: 312, conversions: 28, revenue: 1_240_000, avgCheck: 14_200, trend: 'up' as const },
-  { id: 'M002', name: 'Дмитрий Козлов', avatar: 'ДК', leads: 287, conversions: 24, revenue: 980_000, avgCheck: 13_800, trend: 'up' as const },
-  { id: 'M003', name: 'Елена Петрова', avatar: 'ЕП', leads: 298, conversions: 22, revenue: 920_000, avgCheck: 14_500, trend: 'stable' as const },
-  { id: 'M004', name: 'Максим Иванов', avatar: 'МИ', leads: 256, conversions: 19, revenue: 780_000, avgCheck: 12_900, trend: 'down' as const },
-  { id: 'M005', name: 'Ольга Новикова', avatar: 'ОН', leads: 234, conversions: 26, revenue: 1_050_000, avgCheck: 15_100, trend: 'up' as const },
+  { 
+    id: 'M001', 
+    name: 'Анна Смирнова', 
+    avatar: 'АС', 
+    funnel: { newLeads: 312, responded: 305, dialogEstablished: 280, offerMade: 145, paid: 87 },
+    alert: { type: 'lrt' as const, message: 'Высокий LRT: среднее время ответа 12 минут (норма <5 мин)' }
+  },
+  { 
+    id: 'M002', 
+    name: 'Дмитрий Козлов', 
+    avatar: 'ДК', 
+    funnel: { newLeads: 287, responded: 280, dialogEstablished: 245, offerMade: 156, paid: 69 },
+    alert: { type: 'conversion' as const, message: 'Низкая конверсия в оплату: 44% (при норме 55%+)' }
+  },
+  { 
+    id: 'M003', 
+    name: 'Елена Петрова', 
+    avatar: 'ЕП', 
+    funnel: { newLeads: 298, responded: 268, dialogEstablished: 232, offerMade: 128, paid: 66 },
+    alert: { type: 'missed' as const, message: 'Пропущено 10% лидов без ответа (30 из 298)' }
+  },
+  { 
+    id: 'M004', 
+    name: 'Максим Иванов', 
+    avatar: 'МИ', 
+    funnel: { newLeads: 256, responded: 251, dialogEstablished: 218, offerMade: 112, paid: 49 }
+  },
+  { 
+    id: 'M005', 
+    name: 'Ольга Новикова', 
+    avatar: 'ОН', 
+    funnel: { newLeads: 234, responded: 230, dialogEstablished: 205, offerMade: 135, paid: 81 }
+  },
 ];
 
 const revenueData = [
@@ -44,12 +70,48 @@ const revenueData = [
 ];
 
 const unitMetrics = [
-  { label: 'LTV', value: '45 200 ₽', subValue: 'Средний за 6 месяцев', status: 'good' as const },
-  { label: 'CAC', value: '8 400 ₽', subValue: 'Стоимость привлечения', status: 'good' as const },
-  { label: 'LTV/CAC', value: '5.4x', subValue: 'Целевой: > 3x', status: 'good' as const },
-  { label: 'ARPPU', value: '12 800 ₽', subValue: 'Доход с платящего', status: 'good' as const },
-  { label: 'Payback', value: '2.1 мес', subValue: 'Окупаемость CAC', status: 'warning' as const },
-  { label: 'Маржа', value: '62%', subValue: 'Валовая маржа', status: 'good' as const },
+  { 
+    label: 'LTV', 
+    value: '45 200 ₽', 
+    subValue: 'Средний за 6 месяцев', 
+    status: 'good' as const,
+    tooltip: 'LTV выше целевого (40 000 ₽). Клиенты остаются дольше благодаря качеству продукта. Рассмотрите повышение среднего чека.'
+  },
+  { 
+    label: 'CAC', 
+    value: '8 400 ₽', 
+    subValue: 'Стоимость привлечения', 
+    status: 'good' as const,
+    tooltip: 'CAC в пределах нормы. Следите за сезонными колебаниями — летом обычно растёт на 15-20%.'
+  },
+  { 
+    label: 'LTV/CAC', 
+    value: '5.4x', 
+    subValue: 'Целевой: > 3x', 
+    status: 'good' as const,
+    tooltip: 'Отличное соотношение! Можно инвестировать больше в маркетинг — есть запас до 3x.'
+  },
+  { 
+    label: 'ARPPU', 
+    value: '12 800 ₽', 
+    subValue: 'Доход с платящего', 
+    status: 'good' as const,
+    tooltip: 'Рассмотрите upsale дополнительных курсов для повышения ARPPU до 15 000 ₽.'
+  },
+  { 
+    label: 'Payback', 
+    value: '2.1 мес', 
+    subValue: 'Окупаемость CAC', 
+    status: 'warning' as const,
+    tooltip: 'Окупаемость растёт. Внимание: при росте выше 3 мес. возникнут проблемы с cashflow.'
+  },
+  { 
+    label: 'Маржа', 
+    value: '62%', 
+    subValue: 'Валовая маржа', 
+    status: 'good' as const,
+    tooltip: 'Маржинальность здоровая. Можно инвестировать в качество продукта без потери прибыльности.'
+  },
 ];
 
 const leadSources = [
@@ -82,37 +144,84 @@ export default function Index() {
             title="Выручка (первые оплаты)"
             value="9.6 млн ₽"
             change={-12}
-            changeLabel="vs прошлый месяц"
-            icon={DollarSign}
+            yearChange={18}
+            changeLabel="vs прошлый месяц / год"
+            icon={Wallet}
             variant="warning"
             delay={100}
+            recommendation={{
+              type: 'warning',
+              message: 'Снижение к прошлому месяцу. Проверьте качество лидов.'
+            }}
+          />
+          <MetricCard
+            title="Конверсия в оплату"
+            value="19.8%"
+            change={-2}
+            yearChange={4}
+            changeLabel="vs прошлый месяц / год"
+            icon={Target}
+            variant="info"
+            delay={150}
+            recommendation={{
+              type: 'info',
+              message: 'Ниже таргета 22%. Фокус на этап "Запись на урок".'
+            }}
           />
           <MetricCard
             title="Новых учеников"
             value="842"
             change={8}
-            changeLabel="vs прошлый месяц"
+            yearChange={24}
+            changeLabel="vs прошлый месяц / год"
             icon={Users}
             variant="success"
             delay={200}
+            recommendation={{
+              type: 'success',
+              message: 'Рост стабильный. Продолжайте текущую стратегию.'
+            }}
           />
           <MetricCard
             title="Средний чек"
             value="11 400 ₽"
             change={-3}
-            changeLabel="vs прошлый месяц"
+            yearChange={7}
+            changeLabel="vs прошлый месяц / год"
             icon={CreditCard}
             variant="default"
-            delay={300}
+            delay={250}
           />
+        </div>
+
+        {/* Second Row KPI */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             title="Повторные продажи"
             value="234"
             change={15}
+            yearChange={32}
             changeLabel="upsale + кросс-продажи"
             icon={Repeat}
             variant="success"
-            delay={400}
+            delay={300}
+            recommendation={{
+              type: 'success',
+              message: 'Отличный рост! Программа лояльности работает.'
+            }}
+          />
+          <MetricCard
+            title="Выполнение плана"
+            value="87%"
+            change={-5}
+            changeLabel="до конца месяца 7 дней"
+            icon={TrendingUp}
+            variant="warning"
+            delay={350}
+            recommendation={{
+              type: 'warning',
+              message: 'Нужно +1.4 млн ₽ для 100%. Активизируйте базу.'
+            }}
           />
         </div>
         

@@ -12,7 +12,7 @@ export function DashboardHeader() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Дашборд отдела продаж
+                Дашборд отдела продаж Kodland
               </h1>
               <p className="text-sm text-muted-foreground">
                 Радзун Дмитрий Андреевич • Руководитель отдела продаж
